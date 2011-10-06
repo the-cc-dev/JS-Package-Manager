@@ -1,0 +1,17 @@
+h1. JS-Package-Manager
+
+<pre><code>$('main', {
+    require: ['something', 'another'],
+    package: function(pkg) {
+        something.doStuff();
+        another.doOtherStuff();
+    }
+});</code></pre>
+
+A Client-side JavaScript Package Management Framework.
+
+h2. Features
+
+* Dynamic script loading
+* Doesn't get in the way of your coding style; you put whatever kind of code you want to in the package function.
+* No unnecessry extras; it manages code packages, that's it.
