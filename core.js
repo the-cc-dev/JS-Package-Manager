@@ -5,8 +5,9 @@
 var $ = (function() {
 	
 	var doc = document;
-	var root = doc.head || doc.getElementsByTagName('head')[0];
 	var packages = { };
+	
+	var useMinified = false;
 	
 // ------------------------------------------------------------------
 //  Define the main $ function
@@ -49,24 +50,14 @@ var $ = (function() {
 						loaded: false,
 						after: Callstack(checkPackagesLoaded)
 					};
+					loadScriptFile($.path(pkg));
 				} else if (! packages[pkg].loaded) {
 					packages[pkg].after.push(checkPackagesLoaded);
 				}
-				loadScriptFile($.path(pkg));
 			}(prereqs[i]));
 		}
 		checkPackagesLoaded();
 	};
-	
-// ------------------------------------------------------------------
-//  Define the PackageError constructor
-	
-	$.PackageError = function(msg) {
-		Error.call(this, msg);
-		this.name = 'PackageError';
-		this.message = msg;
-	};
-	$.PackageError.prototype = new Error();
 	
 // ------------------------------------------------------------------
 //  Path control
@@ -75,20 +66,45 @@ var $ = (function() {
 		var path = '/';
 		var func = function(pkg) {
 			if (pkg) {
-				return path + pkg.split('.').join('/') + '.js';
+				var ext = '.js';
+				if (useMinified) {
+					ext = '.min' + ext;
+				}
+				return path + pkg.split('.').join('/') + ext;
 			}
 			return path;
 		};
 		func.set = function(setTo) {
 			if (typeof setTo === 'string') {
 				path = setTo;
-				if (path.charAt(path.length - 1) !== '/') {
+				if (path.length && path.charAt(path.length - 1) !== '/') {
 					path += '/';
 				}
 			}
 		};
 		return func;
 	}());
+	
+// ------------------------------------------------------------------
+//  Configuration control
+
+	$.config = function(opts) {
+		for (var i in opts) {
+			if (opts.hasOwnProperty(i)) {
+				switch (i) {
+					case 'path':
+						$.path.set(opts[i]);
+					break;
+					case 'useMinified':
+						useMinified =!! opts[i];
+					break;
+					default:
+						// unknown config option. do nothing.
+					break;
+				}
+			}
+		}
+	};
 	
 // ------------------------------------------------------------------
 //  Dynamic package loader
@@ -115,6 +131,32 @@ var $ = (function() {
 	};
 
 // ------------------------------------------------------------------
+//  Method for easily defining new Error classes
+
+	$.defineError = function(name, init) {
+		var constructor = function(message) {
+			Error.call(this, message);
+			this.name = name;
+			this.message = message;
+			this.stack = (function() {
+				var err;
+				try { (0)(); } catch (e) { err = e; }
+				return (err.stack || err.stacktrace || void(0));
+			}());
+			if (typeof init === 'function') {
+				init.call(this, message);
+			}
+		};
+		constructor.prototype = new Error();
+		return constructor;
+	};
+	
+// ------------------------------------------------------------------
+//  Define the PackageError constructor
+	
+	$.PackageError = $.defineError('PackageError');
+
+// ------------------------------------------------------------------
 //  Helper functions
 	
 	// Includes a JavaScript file
@@ -124,7 +166,8 @@ var $ = (function() {
 		script.type = 'text/javascript';
 		script.src = src;
 		var last = doc.getElementsByTagName('script');
-		root.insertBefore(script, last[last.length - 1]);
+		last = last[last.length - 1];
+		last.parentNode.insertBefore(script, last);
 	};
 	
 	// A stackable function
