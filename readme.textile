@@ -1,10 +1,11 @@
 h1. JS-Package-Manager
 
 <pre><code>$('main', {
-    require: ['something', 'another'],
+    require: ['foo', 'bar'],
     package: function(pkg) {
-        something.doStuff();
-        another.doOtherStuff();
+    	pkg.exposedProperty = 'stuff';
+        foo.doStuff();
+        bar.doOtherStuff();
     }
 });</code></pre>
 
@@ -15,3 +16,16 @@ h2. Features
 * Dynamic script loading
 * Doesn't get in the way of your coding style; you put whatever kind of code you want to in the package function.
 * No unnecessry extras; it manages code packages, that's it.
+
+h2. Packages
+
+Along with the core package manager, this repository also has a directory called @packages@ which contains some helpful packages that are free to use under the same license as the manager itself. Feel free to help yourself to them.
+
+* css
+* datetime
+* dom
+* events (rebuild of "Events.js":https://github.com/kbjr/Events.js)
+* json (requires also having the second package called "JSON")
+* spin (rebuild of "spin.js":https://github.com/fgnass/spin.js)
+* utils
+* xhr
