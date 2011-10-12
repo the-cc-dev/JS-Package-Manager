@@ -267,6 +267,7 @@ $('datetime', {
 		
 	// ------------------------------------------------------------------
 	//  Date/time formatter
+	//  @link  http://blog.stevenlevithan.com/archives/date-time-format
 		
 		/**
 		 * Allowed formatting tokens:
