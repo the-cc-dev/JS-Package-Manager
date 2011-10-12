@@ -19,13 +19,14 @@ h2. Features
 
 h2. Packages
 
-Along with the core package manager, this repository also has a directory called @packages@ which contains some helpful packages that are free to use under the same license as the manager itself. Feel free to help yourself to them.
+Along with the core package manager, this repository also has a directory called @packages@ which contains some helpful packages that are free to use under the same license as the manager itself. Feel free to help yourself to them. (See the files themselves for documentation on the contained methods).
 
 * css
 * datetime
 * dom
 * events (rebuild of "Events.js":https://github.com/kbjr/Events.js)
-* json (requires also having the second package called "JSON")
+* json
 * spin (rebuild of "spin.js":https://github.com/fgnass/spin.js)
+* str
 * utils
 * xhr

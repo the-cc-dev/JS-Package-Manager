@@ -185,7 +185,6 @@ $('xhr', {
 				queue.push(options);
 				return;
 			}
-			debug.log(options.method + ' ' + options.url);
 			isRunning = true;
 			// Create the XHR object
 			var xhr = getXHR();
