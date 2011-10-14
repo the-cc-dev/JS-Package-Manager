@@ -8,9 +8,11 @@
  * ------------------------------------------------------------------
  *
  * Methods:
- *   mixed  css.get ( Element elem, string prop )
- *   void   css.set ( Element elem, string prop, mixed value )
- *   void   css.set ( Element elem, object properties )
+ *   mixed    css.get ( Element elem, string prop )
+ *   void     css.set ( Element elem, string prop, mixed value )
+ *   void     css.set ( Element elem, object properties )
+ *   boolean  css.enabled ( void )
+ *   boolean  css.supportsRgba ( void )
  */
 
 $('css', {
@@ -45,6 +47,40 @@ $('css', {
 				setStyle(elem, prop, value);
 			}
 		};
+		
+		pkg.enabled = (function() {
+			var flag = null;
+			return function() {
+				if (flag === null) {
+					// Build the test nodes
+					var testDiv = document.body.appendChild(document.createElement('div'));
+					testDiv.appendChild(document.createTextNode('Testing for CSS...'));
+					testDiv.style.display = 'none';
+					// See if css is enabled
+					flag = (testDiv.offsetWidth == 0 && testDiv.offsetHeight == 0) ? true : false;
+					// Remove the test nodes
+					document.body.removeChild(testDiv);
+				}
+				return flag;
+			};
+		}());
+		
+		pkg.supportsRgba = (function() {
+			var flag = null;
+			return function() {
+				if (flag === null) {
+					var p = document.createElement('p');
+					try {
+						p.style.color = 'rgba(1, 1, 1, 0.5)';
+						flag = /^rgba/.test(p.style.color);
+					} catch (e) {
+						flag = false;
+					}
+					p = null;
+				}
+				return flag;
+			};
+		}());
 	
 	// ------------------------------------------------------------------
 	//  Internal fallback helpers
@@ -100,7 +136,7 @@ $('css', {
 		};
 	
 		function getStyle(elem, prop) {
-			var getter = vendorProperty(prop);
+			var getter = vendorProperty(elem, prop);
 			if (typeof getter === 'function') {
 				return getter(elem);
 			} else {
@@ -112,12 +148,26 @@ $('css', {
 	//  Low-level internal style reader
 	
 		function readStyleValue(elem, prop) {
+			var result = null;
 			if (elem.currentStyle) {
-				return elem.currentStyle[prop];
+				result = elem.currentStyle[prop];
 			} else if (window.getComputedStyle) {
-				return document.defaultView.getComputedStyle(elem, null).getPropertyValue(prop);
+				var computed = document.defaultView.getComputedStyle(elem, null);
+				result = computed.getPropertyValue(prop);
+				if (result === null) {
+					result = computed.getPropertyValue(hyphenate(prop));
+				}
 			}
-			return null;
+			return result;
+		};
+		
+	// ------------------------------------------------------------------
+	//  Helper functions
+	
+		function hyphenate(property) {
+			return property.replace(/[A-Z]/g, function(letter) {
+				return '-' + letter.toLowerCase();
+			});
 		};
 	
 	}

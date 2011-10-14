@@ -1,13 +1,20 @@
 // Set the package path
-$.path.set('packages/');
+$.path.set('../packages/');
 
 // Define the main package
 $('main', {
-	require: ['module'],
+	require: ['fx', 'cssColor'],
 	package: function(pkg) {
-		console.log(module.string);
-		$.require('other.module', function() {
-			console.log('other.module ran');
-		});
+		
+		window.setTimeout(function() {
+			fx.animate(document.body, {
+				duration: 1000,
+				changes: { backgroundColor: '#800' },
+				oncomplete: function() {
+					console.log('animation finished');
+				}
+			});
+		}, 500);
+		
 	}
 });

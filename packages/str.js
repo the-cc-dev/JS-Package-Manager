@@ -11,6 +11,9 @@
  *   string    str.repeat ( string text, number count )
  *   string    str.capitalizeWords ( string text )
  *   string    str.padNumber ( number num, number digits )
+ *   string    str.trim ( string text )
+ *   string    str.trimLeft ( string text )
+ *   string    str.trimRight ( string text )
  *   string    str.sprintf ( string format[, mixed arg[, ... ]])
  *   string    str.vsprintf ( string format, array args )
  *
@@ -78,6 +81,63 @@ $('str', {
 			}
 			return num;
 		};
+		
+		/**
+		 * Trims whitespace off of a string
+		 *
+		 * @access  public
+		 * @param   string    the string to trim
+		 * @return  string
+		 */
+		pkg.trim = (! String.prototype.trim ?
+			(function() {
+				var regex = /(^\s+|\s+$)/g;
+				return function(text) {
+					return text.replace(regex, '');
+				};
+			}()) :
+			function(text) {
+				return text.trim();
+			}
+		);
+		
+		/**
+		 * Trims whitespace off the left of a string
+		 *
+		 * @access  public
+		 * @param   string    the string to trim
+		 * @return  string
+		 */
+		pkg.trimLeft = (! String.prototype.trimLeft ?
+			(function() {
+				var regex = /^\s+/;
+				return function(text) {
+					return text.replace(regex, '');
+				};
+			}()) :
+			function(text) {
+				return text.trimLeft();
+			}
+		);
+		
+		/**
+		 * Trims whitespace off the right of a string
+		 *
+		 * @access  public
+		 * @param   string    the string to trim
+		 * @return  string
+		 */
+		pkg.trimRight = (! String.prototype.trimRight ?
+			(function() {
+				var regex = /\s+$/;
+				return function(text) {
+					return text.replace(regex, '');
+				};
+			}()) :
+			function(text) {
+				return text.trimRight();
+			}
+		);
 		
 		/**
 		 * Error constructor for handling errors in string formatting
