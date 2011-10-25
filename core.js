@@ -7,8 +7,6 @@ var $ = (function() {
 	var doc = document;
 	var packages = { };
 	
-	var useMinified = false;
-	
 // ------------------------------------------------------------------
 //  Define the main $ function
 
@@ -87,11 +85,7 @@ var $ = (function() {
 		var path = '/';
 		var func = function(pkg) {
 			if (pkg) {
-				var ext = '.js';
-				if (useMinified) {
-					ext = '.min' + ext;
-				}
-				return path + pkg.split('.').join('/') + ext;
+				return path + pkg.split('.').join('/') + '.js';
 			}
 			return path;
 		};
@@ -223,7 +217,7 @@ var $ = (function() {
 		var current = window;
 		for (var i = 0, c = ns.length - 1; i < c; i++) {
 			if (typeof current[ns[i]] !== 'object') {
-				current[ns[i]] = { };
+				current[ns[i]] = new PackageNamespace();
 			}
 			current = current[ns[i]];
 		}
