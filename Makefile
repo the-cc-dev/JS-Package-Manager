@@ -11,6 +11,7 @@ PACKAGES = ${PACKAGES_DIR}/color.js\
 	${PACKAGES_DIR}/cssColor.js\
 	${PACKAGES_DIR}/datetime.js\
 	${PACKAGES_DIR}/dom.js\
+	${PACKAGES_DIR}/dragdrop.js\
 	${PACKAGES_DIR}/events.js\
 	${PACKAGES_DIR}/fx.js\
 	${PACKAGES_DIR}/json.js\
