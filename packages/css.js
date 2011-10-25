@@ -25,6 +25,11 @@ $('css', {
 	
 		var propertyMap = { };
 		var vendorPrefixes = ['webkit', 'Moz', 'ms', 'O', 'Khtml'];
+	
+	// ------------------------------------------------------------------
+	//  NodeList (dynamic) of all <link> elements
+		
+		var links = document.getElementsByTagName('link');
 		
 	// ------------------------------------------------------------------
 	//  Public interface
@@ -81,6 +86,74 @@ $('css', {
 				return flag;
 			};
 		}());
+	
+	// ------------------------------------------------------------------
+	//  Stylesheet methods
+	
+		/**
+		 * Dynamically load a stylesheet
+		 *
+		 * @access  public
+		 * @param   string    the file URL
+		 * @return  void
+		 */
+		pkg.loadStylesheet = function(file) {
+			//
+			// ==================================== TODO ====================================
+			//
+		};
+		
+		/**
+		 * Enable a disabled alternate stylesheet
+		 *
+		 * @access  public
+		 * @param   mixed     the stylesheet
+		 * @return  void
+		 */
+		pkg.enableStylesheet = function(sheet) {
+			//
+			// ==================================== TODO ====================================
+			//
+		};
+		
+		/**
+		 * Disable a enabled alternate stylesheet
+		 *
+		 * @access  public
+		 * @param   mixed     the stylesheet
+		 * @return  void
+		 */
+		pkg.disableStylesheet = function(sheet) {
+			//
+			// ==================================== TODO ====================================
+			//
+		};
+		
+		/**
+		 * Toggle an alternate stylesheet
+		 *
+		 * @access  public
+		 * @param   mixed     the stylesheet
+		 * @return  void
+		 */
+		pkg.toggleStylesheet = function(sheet) {
+			//
+			// ==================================== TODO ====================================
+			//
+		};
+		
+		/**
+		 * Create a new stylesheet with the given rules and insert it into the DOM
+		 *
+		 * @access  public
+		 * @param   object    rules
+		 * @return  object
+		 */
+		pkg.createStylesheet = function(rules) {
+			//
+			// ==================================== TODO ====================================
+			//
+		};
 	
 	// ------------------------------------------------------------------
 	//  Internal fallback helpers
@@ -168,7 +241,20 @@ $('css', {
 			return property.replace(/[A-Z]/g, function(letter) {
 				return '-' + letter.toLowerCase();
 			});
-		};
+		}
+		
+		function getStylesheet(sheet) {
+			// If a string was given, we are fetching by title attribute
+			if (typeof sheet === 'string') {
+				for (var i = 0, c = links.length; i < c; i++) {
+					if (links[i].title === sheet) {
+						sheet = links[i];
+						break;
+					}
+				}
+			}
+			return (typeof sheet === 'object') ? sheet : null;
+		}
 	
 	}
 });
