@@ -12,11 +12,19 @@
  *   Element  dom.createElement ([ string tag = 'div'[, object attrs ]])
  *   Node     dom.insertBefore ( Node node, Node ref )
  *   Node     dom.insertAfter ( Node node, Node ref )
+ *   boolean  dom.hasClass ( Element element, string classname )
+ *   void     dom.addClass ( Element element, string classname )
+ *   void     dom.removeClass ( Element element, string classname )
  */
 
 $('dom', {
 	require: ['css'],
 	package: function(pkg) {
+		
+		var classRegexes = { };
+		function createClassRegex(cn) {
+			classRegexes[cn] = new RegExp('(^|\\s)+' + cn + '(\\s|$)+', 'g');
+		}
 		
 		/**
 		 * Create a DOM element
@@ -29,6 +37,7 @@ $('dom', {
 		pkg.createElement = function(tag, attrs) {
 			var parent;
 			var elem = document.createElement(tag || 'div');
+			var after = function() { };
 			if (attrs) {
 				document.body.appendChild(elem);
 				for (var i in attrs) {
@@ -39,6 +48,9 @@ $('dom', {
 							break;
 							case 'parentNode':
 								parent = attrs[i];
+							break;
+							case 'after':
+								after = attrs[i];
 							break;
 							default:
 								elem[i] = attrs[i];
@@ -51,6 +63,7 @@ $('dom', {
 			if (parent) {
 				parent.appendChild(elem);
 			}
+			after(elem);
 			return elem;
 		};
 		
@@ -86,7 +99,50 @@ $('dom', {
 				}
 			}
 			return node;
-		};	
+		};
+		
+		/**
+		 * Check if an element has a given classname
+		 *
+		 * @access  public
+		 * @param   object    the element
+		 * @param   string    the class name
+		 * @return  boolean
+		 */
+		pkg.hasClass = function(element, cn) {
+			if (! classRegexes[cn]) {
+				createClassRegex(cn);
+			}
+			return classRegexes[cn].test(element.className);
+		};
+		
+		/**
+		 * Add a classname to an element
+		 *
+		 * @access  public
+		 * @param   object    the element
+		 * @param   string    the class name
+		 * @return  void
+		 */
+		pkg.addClass = function(element, cn) {
+			if (! pkg.hasClass(element, cn)) {
+				element.className += (element.className.length ? ' ' : '') + cn;
+			}
+		};
+		
+		/**
+		 * Remove a classname from an element
+		 *
+		 * @access  public
+		 * @param   object    the element
+		 * @param   string    the class name
+		 * @return  void
+		 */
+		pkg.removeClass = function(element, cn) {
+			if (pkg.hasClass(element, cn)) {
+				element.className = element.className.replace(classRegexes[cn], ' ');
+			}
+		};
 		
 	}
 });

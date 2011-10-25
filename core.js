@@ -34,7 +34,7 @@ var $ = (function() {
 				}
 			}
 			// Run the package function
-			var pkg = { };
+			var pkg = PackageNamespace();
 			definition.package(pkg);
 			storeToNamespace(packageName, pkg);
 			// When the package function finishes running, clean up by running any
@@ -57,6 +57,27 @@ var $ = (function() {
 			}(prereqs[i]));
 		}
 		checkPackagesLoaded();
+	};
+	
+	$.packageLoaded = function(pkg) {
+		return (packages.hasOwnProperty(pkg) && packages[pkg].loaded);
+	};
+	
+// ------------------------------------------------------------------
+//  Package namespace constructor
+	
+	function PackageNamespace(name) {
+		var ret = function() {
+			if (typeof ret.__invoke === 'function') {
+				return ret.__invoke.apply(ret, arguments);
+			} else {
+				throw new $.PackageError('Cannot invoke package namespace; no __invoke method is defined.');
+			}
+		};
+		
+		
+		
+		return ret;
 	};
 	
 // ------------------------------------------------------------------
@@ -144,7 +165,7 @@ var $ = (function() {
 				return (err.stack || err.stacktrace || void(0));
 			}());
 			if (typeof init === 'function') {
-				init.call(this, message);
+				init.apply(this, arguments);
 			}
 		};
 		constructor.prototype = new Error();

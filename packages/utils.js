@@ -11,7 +11,6 @@
  *   array     utils.toArray ( object arr )
  *   function  utils.bindScope ( object scope[, mixed args ... ], function func )
  *   number    utils.roundTo ( number num, number places )
- *   number    utils.rand ([ number min[, number max ]])
  *   string    utils.uuid ( void )
  *   void      utils.globalEval ( string code )
  *   void      utils.runAsync ( function callback )
@@ -138,29 +137,27 @@ $('utils', {
 		};
 		
 		/**
-		 * Generate a Math.random() integar between min and max
-		 *
-		 * @access  public
-		 * @param   number    the min value
-		 * @param   number    the max value
-		 * @return  number
-		 */
-		pkg.rand = function(min, max) {
-			min = (min === void(0)) ? 0 : min;
-			max = (max === void(0)) ? 32000 : max;
-			return ((Math.random() * (max + min) + 1) | 0) - min;
-		};
-		
-		/**
 		 * Generates a v4 UUID
 		 *
 		 * @access  public
+		 * @param   string    the PRNG to use
 		 * @return  string
 		 */
-		pkg.uuid = function() {
-			var ret = '', rand;
+		pkg.uuid = function(prng) {
+			var random = Math.random;
+			// Allow using a non-native PRNG if "rand" is included
+			if (prng) {
+				if ($.packageLoaded('rand')) {
+					gen = function() {
+						return rand.double(prng);
+					};
+				} else {
+					throw 'Must include the "rand" package to use a non-native PRNG';
+				}
+			}
+			var ret = '', value;
 			for (var i = 0; i < 32; i++) {
-				rand = Math.random() * 16 | 0;
+				value = random() * 16 | 0;
 				// Insert the hypens
 				if (i > 4 && i < 21 && ! (i % 4)) {
 					ret += '-';
@@ -168,7 +165,7 @@ $('utils', {
 				// Add the next random character
 				ret += (
 					(i === 12) ? 4 : (
-						(i === 16) ? (rand & 3 | 8) : rand
+						(i === 16) ? (value & 3 | 8) : value
 					)
 				).toString(16);
 			}
