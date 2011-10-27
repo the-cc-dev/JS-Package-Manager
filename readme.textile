@@ -27,6 +27,7 @@ Along with the core package manager, this repository also has a directory called
 * cssColor
 * datetime
 * dom
+* download
 * dragdrop (rebuild of "DragDrop":https://github.com/kbjr/DragDrop)
 * events (rebuild of "Events.js":https://github.com/kbjr/Events.js)
 * fx

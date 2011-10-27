@@ -82,16 +82,52 @@ $('fonts', {
 		/**
 		 * Test if the client supports using css @font-face declarations
 		 *
+		 * Implementation concept borrowed from:
+		 * @link    http://paulirish.com/2009/font-face-feature-detection/
+		 *
 		 * @access  public
 		 * @return  boolean
 		 */
 		pkg.supportsFontFace = (function() {
 			var flag = null;
+			function checkSupport() {
+				var sheet;
+				var doc = document;
+				var root = doc.head || doc.getElementsByTagName('head')[0] || doc.documentElement;
+				var style = doc.createElement('style');
+				var implementation = doc.implementation || { hasFeature: function() { return false; } };
+				
+				style.type = 'text/css';
+				root.insertBefore(style, root.firstChild);
+				sheet = style.sheet || style.styleSheet;
+				
+				var supportAtRule = (implementation.hasFeature('CSS2', '') ?
+					function (rule) {
+						if (! (sheet && rule)) {
+							return false;
+						}
+						var result = false;
+						try {
+							sheet.insertRule(rule, 0);
+							result =! (/unknown/i).test(sheet.cssRules[0].cssText);
+							sheet.deleteRule(sheet.cssRules.length - 1);
+						} catch (e) { }
+						return result;
+					} :
+					function (rule) {
+						if (! (sheet && rule)) {
+							return false;
+						}
+						sheet.cssText = rule;
+						return sheet.cssText.length !== 0 && ! (/unknown/i).test(sheet.cssText) &&
+							sheet.cssText.replace(/\r+|\n+/g, '').indexOf(rule.split(' ')[0]) === 0;
+					}
+				);
+				flag = supportAtRule('@font-face { font-family: "font"; src: "font.ttf"; }');
+			}
 			return function() {
 				if (flag === null) {
-					//
-					// ==================================== TODO ====================================
-					//
+					checkSupport();
 				}
 				return flag;
 			};
@@ -101,13 +137,23 @@ $('fonts', {
 		 * Load a given font dynamically using css @font-face
 		 *
 		 * @access  public
-		 * @param   string    the font to load
+		 * @param   string    the font-family
+		 * @param   string    the font file
 		 * @return  void
 		 */
-		pkg.load = function(font) {
-			//
-			// ==================================== TODO ====================================
-			//
+		pkg.load = function(font, file) {
+			if (pkg.supportsFontFace()) {
+				file = pkg.fontPath(file);
+				css.addRules([
+					'@font-face {',
+					'	font-family: ' + font + ';',
+					'	src: url("' + file + '.eot?#iefix") format("embedded-opentype"),',
+					'	     url("' + file + '.woff") format("woff"),',
+					'	     url("' + file + '.ttf") format("truetype"),',
+					'	     url("' + file + '.svg#svgFontName") format("svg");',
+					'}'
+				]);
+			}
 		};
 		
 		/**

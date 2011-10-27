@@ -13,6 +13,12 @@
  *   void     css.set ( Element elem, object properties )
  *   boolean  css.enabled ( void )
  *   boolean  css.supportsRgba ( void )
+ *   void     css.loadStylesheet ( string url )
+ *   void     css.enableStylesheet ( mixed sheet )
+ *   void     css.disableStylesheet ( mixed sheet )
+ *   void     css.toggleStylesheet ( mixed sheet )
+ *   void     css.switchStylesheet ( mixed sheet )
+ *   void     css.addRules ( mixed rules )
  */
 
 $('css', {
@@ -27,12 +33,14 @@ $('css', {
 		var vendorPrefixes = ['webkit', 'Moz', 'ms', 'O', 'Khtml'];
 	
 	// ------------------------------------------------------------------
-	//  NodeList (dynamic) of all <link> elements
+	//  Stylesheet manipulation variables
 		
+		var root = document.head || document.getElementsByTagName('head')[0];
 		var links = document.getElementsByTagName('link');
+		var relRegex = /alterat(e|ive) stylesheet/i;
 		
 	// ------------------------------------------------------------------
-	//  Public interface
+	//  Main get/set methods
 		
 		pkg.get = function(elem, prop) {
 			return getStyle(elem, prop);
@@ -52,6 +60,9 @@ $('css', {
 				setStyle(elem, prop, value);
 			}
 		};
+	
+	// ------------------------------------------------------------------
+	//  Support methods
 		
 		pkg.enabled = (function() {
 			var flag = null;
@@ -98,9 +109,11 @@ $('css', {
 		 * @return  void
 		 */
 		pkg.loadStylesheet = function(file) {
-			//
-			// ==================================== TODO ====================================
-			//
+			var link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = file;
+			root.insertBefore(link, root.firstChild);
 		};
 		
 		/**
@@ -111,9 +124,10 @@ $('css', {
 		 * @return  void
 		 */
 		pkg.enableStylesheet = function(sheet) {
-			//
-			// ==================================== TODO ====================================
-			//
+			sheet = getStylesheet(sheet);
+			if (sheet && relRegex.test(sheet.rel)) {
+				sheet.disabled = false;
+			}
 		};
 		
 		/**
@@ -124,9 +138,10 @@ $('css', {
 		 * @return  void
 		 */
 		pkg.disableStylesheet = function(sheet) {
-			//
-			// ==================================== TODO ====================================
-			//
+			sheet = getStylesheet(sheet);
+			if (sheet && relRegex.test(sheet.rel)) {
+				sheet.disabled = true;
+			}
 		};
 		
 		/**
@@ -137,23 +152,98 @@ $('css', {
 		 * @return  void
 		 */
 		pkg.toggleStylesheet = function(sheet) {
-			//
-			// ==================================== TODO ====================================
-			//
+			sheet = getStylesheet(sheet);
+			if (sheet && relRegex.test(sheet.rel)) {
+				sheet.disabled =! sheet.disabled;
+			}
 		};
 		
 		/**
-		 * Create a new stylesheet with the given rules and insert it into the DOM
+		 * Disable all stylesheets except the one given
 		 *
 		 * @access  public
-		 * @param   object    rules
-		 * @return  object
+		 * @param   mixed     the stylesheet
+		 * @return  void
 		 */
-		pkg.createStylesheet = function(rules) {
-			//
-			// ==================================== TODO ====================================
-			//
+		pkg.switchStylesheet = function(sheet) {
+			if (typeof sheet === 'string') {
+				for (var i = 0, c = links.length; i < c; i++) {
+					if (links[i].title === sheet) {
+						pkg.enableStylesheet(links[i]);
+					} else {
+						pkg.disableStylesheet(links[i]);
+					}
+				}
+			} else {
+				for (var i = 0, c = links.length; i < c; i++) {
+					if (links[i] === sheet) {
+						pkg.enableStylesheet(links[i]);
+					} else {
+						pkg.disableStylesheet(links[i]);
+					}
+				}
+			}
 		};
+		
+		/**
+		 * Add the given CSS rules to the document
+		 *
+		 * @access  public
+		 * @param   mixed     rules
+		 * @return  void
+		 */
+		pkg.addRules = (function() {
+			var stylesheet = null;
+			var testElement = document.body || document.createElement('p');
+			return function(rules) {
+				// If an object was given, parse it into a rule string
+				if (typeof rules === 'object') {
+					var _rules = '';
+					for (var selector in rules) {
+						if (rules.hasOwnProperty(selector)) {
+							_rules += selector + ' { ';
+							for (var property in rules[selector]) {
+								if (rules[selector].hasOwnProperty(property)) {
+									var value = rules[selector][property];
+									var prefix = vendorProperty(testElement, property);
+									property = hyphenate(property);
+									if (prefix[0]) {
+										property = '-' + prefix[0] + '-' + property;
+									} else if (prefix[1] === opacityFallback) {
+										if (testElement.style.msFilter !== undef) {
+											property = '-ms-filter';
+											value = '"alpha(opacity=' + (value * 100) + ')"';
+										} else if (testElement.style.filter !== undef) {
+											property = 'filter';
+											value = 'alpha(opacity=' + (value * 100) + ')';
+										}
+									}
+									_rules += property + ': ' + value + '; ';
+								}
+							}
+							_rules += '}';
+						}
+					}
+					rules = _rules;
+				}
+				// Do the actual rule embedding
+				if (typeof rules === 'string') {
+					if (stylesheet === null) {
+						stylesheet = root.appendChild(
+							document.createElement('style')
+						);
+						stylesheet.type = 'text/css';
+					}
+					if (stylesheet.styleSheet) {
+						stylesheet.styleSheet.cssText += ' ' + rules;
+					} else {
+						stylesheet.appendChild(
+							document.createTextNode(' ' + rules)
+						);
+					}
+				}
+			};
+		}());
 	
 	// ------------------------------------------------------------------
 	//  Internal fallback helpers
@@ -173,22 +263,22 @@ $('css', {
 		function vendorProperty(elem, prop) {
 			if (! propertyMap.hasOwnProperty(prop)) {
 				if (elem.style[prop] !== undef) {
-					propertyMap[prop] = prop;
+					propertyMap[prop] = [null, prop];
 				} else {
 					var capped = prop.charAt(0).toUpperCase() + prop.slice(1);
 					for (var i = 0, c = vendorPrefixes.length; i < c; i++) {
 						var vendorProp = vendorPrefixes[i] + capped;
 						if (elem.style[vendorProp] !== undef) {
-							propertyMap[prop] = vendorProp;
+							propertyMap[prop] = [vendorPrefixes[i], vendorProp];
 							break;
 						}
 					}
 					if (! propertyMap.hasOwnProperty(prop)) {
 						// Fallback for opacity using IE filter
 						if (prop === 'opacity' && (elem.style.msFilter !== undef || elem.style.filter !== undef)) {
-							propertyMap[prop] = opacityFallback;
+							propertyMap[prop] = [null, opacityFallback];
 						} else {
-							propertyMap[prop] = prop;
+							propertyMap[prop] = [null, prop];
 						}
 					}
 				}
@@ -200,7 +290,7 @@ $('css', {
 	//  Internal property getter/setter
 	
 		function setStyle(elem, prop, value) {
-			var setter = vendorProperty(elem, prop);
+			var setter = vendorProperty(elem, prop)[1];
 			if (typeof setter === 'function') {
 				setter(elem, value);
 			} else {
@@ -209,7 +299,7 @@ $('css', {
 		};
 	
 		function getStyle(elem, prop) {
-			var getter = vendorProperty(elem, prop);
+			var getter = vendorProperty(elem, prop)[1];
 			if (typeof getter === 'function') {
 				return getter(elem);
 			} else {

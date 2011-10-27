@@ -61,7 +61,7 @@ $('rand', {
 		};
 		
 		/**
-		 * Generate a random integar between min and max using the given generator
+		 * Generate a random integer between min and max using the given generator
 		 *
 		 * @access  public
 		 * @param   object    options { min, max, gen }
@@ -191,29 +191,29 @@ $('rand', {
 				if (!keylen) { key = [keylen++]; }
 				while (i < width) { me.S[i] = i++; }
 				for (i = 0; i < width; i++) {
-				t = me.S[i];
-				j = lowbits(j + t + key[i % keylen]);
-				u = me.S[j];
-				me.S[i] = u;
-				me.S[j] = t;
+					t = me.S[i];
+					j = lowbits(j + t + key[i % keylen]);
+					u = me.S[j];
+					me.S[i] = u;
+					me.S[j] = t;
 				}
 				me.g = function getnext(count) {
-				var s = me.S;
-				var i = lowbits(me.i + 1); var t = s[i];
-				var j = lowbits(me.j + t); var u = s[j];
-				s[i] = u;
-				s[j] = t;
-				var r = s[lowbits(t + u)];
-				while (--count) {
-					i = lowbits(i + 1); t = s[i];
-					j = lowbits(j + t); u = s[j];
+					var s = me.S;
+					var i = lowbits(me.i + 1); var t = s[i];
+					var j = lowbits(me.j + t); var u = s[j];
 					s[i] = u;
 					s[j] = t;
-					r = r * width + s[lowbits(t + u)];
-				}
-				me.i = i;
-				me.j = j;
-				return r;
+					var r = s[lowbits(t + u)];
+					while (--count) {
+						i = lowbits(i + 1); t = s[i];
+						j = lowbits(j + t); u = s[j];
+						s[i] = u;
+						s[j] = t;
+						r = r * width + s[lowbits(t + u)];
+					}
+					me.i = i;
+					me.j = j;
+					return r;
 				};
 				me.g(width);
 			}
@@ -224,7 +224,9 @@ $('rand', {
 				if (depth && typ == 'object') {
 				for (prop in obj) {
 					if (prop.indexOf('S') < 5) {
-					try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
+						try {
+							result.push(flatten(obj[prop], depth - 1));
+						} catch (e) { }
 					}
 				}
 				}
