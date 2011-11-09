@@ -148,7 +148,7 @@ $('utils', {
 			// Allow using a non-native PRNG if "rand" is included
 			if (prng) {
 				if ($.packageLoaded('rand')) {
-					gen = function() {
+					random = function() {
 						return rand.double(prng);
 					};
 				} else {
