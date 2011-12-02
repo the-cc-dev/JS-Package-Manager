@@ -47,7 +47,7 @@ $('fonts', {
 			for (var i = 0, c = controlFonts.length; i < c; i++) {
 				var control = controlFonts[i];
 				// First, set the test element to the correct font-family
-				fontTestElement.style.fontFamily = font + ' ' + control;
+				fontTestElement.style.fontFamily = font + ', ' + control;
 				// Then, set our control element to the default font
 				fontTestControl.style.fontFamily = control;
 				// Now, test for any differences in dimensions
